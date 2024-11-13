@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Car race</string>
+    <string name="voltas">Voltas:</string>
+    <string name="penalidades">Penalidades:</string>
+</resources>

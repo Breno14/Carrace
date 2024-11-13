@@ -1,0 +1,98 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/constraintLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:id="@+id/trackContainer"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:background="@drawable/track"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/numCarsLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Qtd de carros:"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/trackContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="32dp" />
+
+    <EditText
+        android:id="@+id/numCarsInput"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:backgroundTint="@android:color/darker_gray"
+        app:layout_constraintTop_toTopOf="@id/numCarsLabel"
+        app:layout_constraintStart_toEndOf="@id/numCarsLabel"
+        android:layout_marginStart="8dp"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/startButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start"
+        android:backgroundTint="#4CAF50"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/numCarsLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="32dp" />
+
+    <Button
+        android:id="@+id/pauseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pause"
+        android:backgroundTint="#FFC107"
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@id/startButton"
+        app:layout_constraintStart_toStartOf="@id/startButton"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/finishButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Finish"
+        android:backgroundTint="#F44336"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/pauseButton"
+        app:layout_constraintStart_toStartOf="@id/pauseButton"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/lapsInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Voltas:"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/finishButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="32dp" />
+
+    <TextView
+        android:id="@+id/penaltiesInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Penalidades:"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/lapsInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="32dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "555313803114",
+    "project_id": "car-race-a98d1",
+    "storage_bucket": "car-race-a98d1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:555313803114:android:789a64b669be3e10467f13",
+        "android_client_info": {
+          "package_name": "com.example.carrace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrJsOlJe7UYf277n_nM4Uo8T7pBYeY7bo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
