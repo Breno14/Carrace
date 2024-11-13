@@ -13,7 +13,7 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS) // Preferência para repositórios definidos neste arquivo
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS) 
     repositories {
         google()
         mavenCentral()
