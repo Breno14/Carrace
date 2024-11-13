@@ -1,6 +1,4 @@
-// Arquivo de build no nível do projeto
 
-// Bloco de buildscript para adicionar dependências de build
 buildscript {
     dependencies {
         classpath("com.google.gms:google-services:4.3.14") // Plugin do Google Services para Firebase
