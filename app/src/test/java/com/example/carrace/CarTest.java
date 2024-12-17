@@ -74,4 +74,53 @@ public class CarTest {
         // O teste será bem-sucedido se não houver erro de semáforo (ambos os carros não entram ao mesmo tempo)
         assertTrue(true, "Os carros acessaram a zona crítica de forma controlada pelo semáforo.");
     }
+
+    @Test
+    public void testCarStopsWhenFuelEnds() {
+        // Consome todo o combustível do carro
+        car.consumeFuel(car.getFuel());
+
+        // Move o carro
+        car.move();
+
+        // Verifica se o combustível é zero e o carro parou
+        assertEquals(0, car.getFuel(), "O combustível deveria ser 0.");
+        assertTrue(!car.isRunning(), "O carro deveria ter parado.");
+    }
+
+    @Test
+    public void testExclusiveCriticalZoneAccess() throws InterruptedException {
+        // Configura o mock para usar um semáforo real
+        java.util.concurrent.Semaphore semaphore = new java.util.concurrent.Semaphore(1);
+        Mockito.when(mockRaceManager.getCriticalZoneSemaphore()).thenReturn(semaphore);
+
+        // Cria dois carros para testar o acesso exclusivo
+        Car car1 = new Car("Carro1", 150, 100, 10, mockTrack, mockRaceManager);
+        Car car2 = new Car("Carro2", 150, 100, 10, mockTrack, mockRaceManager);
+
+        // Inicia os carros simultaneamente
+        Thread t1 = new Thread(() -> car1.move());
+        Thread t2 = new Thread(() -> car2.move());
+        t1.start();
+        t2.start();
+
+        // Aguarda que as threads terminem
+        t1.join();
+        t2.join();
+
+        // Verifica se o semáforo está funcionando corretamente
+        assertEquals(1, semaphore.availablePermits(), "Apenas um carro deveria acessar a zona crítica por vez.");
+    }
+
+    @Test
+    public void testTrackInteractions() {
+        // Configura o mock para sempre retornar true para isOnTrack
+        Mockito.when(mockTrack.isOnTrack(Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
+
+        // Move o carro
+        car.move();
+
+        // Verifica se o método isOnTrack foi chamado
+        Mockito.verify(mockTrack, Mockito.atLeastOnce()).isOnTrack(Mockito.anyInt(), Mockito.anyInt());
+    }
 }

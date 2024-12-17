@@ -2,68 +2,77 @@ package com.example.carrace;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-public class Car extends Vehicle {
+public class Car extends Vehicle implements Comparable<Car> {
     private Map<String, Integer> sensor = new HashMap<>();
     private double angle;
     private Track track;
     private RaceManager raceManager;
+    private long processingTime; // Tempo total de processamento
+    private long responseTime;   // Tempo de resposta para análise de escalonabilidade
 
     public Car(String name, int initialX, int initialY, double speed, Track track, RaceManager raceManager) {
         super(name, initialX, initialY, speed);
         this.angle = 0;
         this.track = track;
         this.raceManager = raceManager;
+        this.processingTime = 0;
+        this.responseTime = 0;
     }
 
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
         while (isRunning) {
             try {
+                long moveStart = System.nanoTime();
                 move(); // Movimento do carro
+                long moveEnd = System.nanoTime();
+
+                processingTime += (moveEnd - moveStart); // Atualiza o tempo de processamento
                 Thread.sleep(100); // Controla a velocidade do movimento
             } catch (InterruptedException e) {
-                System.out.println(name + " foi interrompido: " + e.getMessage());
-                Thread.currentThread().interrupt(); // Retoma o estado de interrupção da Thread
-            } catch (Exception e) {
-                System.out.println("Erro inesperado no carro " + name + ": " + e.getMessage());
+                System.out.println(name + " foi interrompido.");
+                Thread.currentThread().interrupt();
             }
         }
     }
 
     @Override
     public void move() {
-        try {
-            updateSensors(track); // Atualiza sensores antes de se mover
-            executeAvoidance();   // Ajusta direção conforme sensores
+        long startTime = System.nanoTime();
 
-            // Calcula a nova posição baseada no ângulo e na velocidade
+        consumeFuel(1); // Consome combustível a cada movimento
+        if (fuel <= 0) {
+            stop();
+            return;
+        }
+
+        try {
+            updateSensors(track);
+            executeAvoidance();
+
             int deltaX = (int) (Math.cos(Math.toRadians(angle)) * speed);
             int deltaY = (int) (Math.sin(Math.toRadians(angle)) * speed);
 
             int newX = x + deltaX;
             int newY = y + deltaY;
 
-            boolean inCriticalZone = newX >= 140 && newX <= 160;
-
-            if (inCriticalZone) {
-                enterCriticalZone(newX, newY); // Entra na zona crítica se aplicável
+            if (track.isOnTrack(newX, newY)) {
+                x = newX;
+                y = newY;
+                distance++;
             } else {
-                if (track.isOnTrack(newX, newY)) { // Verifica se a nova posição está na pista
-                    if (newX >= 0 && newX < track.getWidth() && newY >= 0 && newY < track.getHeight()) {
-                        x = newX;
-                        y = newY;
-                        distance++;
-                    }
-                } else {
-                    incrementPenalty();
-                    adjustDirection(90); // Reverte a direção ao sair da pista
-                }
+                incrementPenalty();
+                adjustDirection(45); // Ajusta a direção ao sair da pista
+                System.out.println(name + " saiu da pista e foi penalizado.");
             }
         } catch (Exception e) {
-            System.out.println("Erro no movimento do carro " + name + ": " + e.getMessage());
+            System.out.println("Erro no movimento de " + name + ": " + e.getMessage());
         }
+
+        long endTime = System.nanoTime();
+        responseTime = endTime - startTime; //tempo de resposta
     }
 
     @Override
@@ -71,8 +80,13 @@ public class Car extends Vehicle {
         penalty++;
     }
 
-    // Método para atualizar as leituras dos sensores
-    public void updateSensors(Track track) {
+    // Implementação do método compareTo exigido pelo PriorityBlockingQueue
+    @Override
+    public int compareTo(Car otherCar) {
+        return Integer.compare(this.getDistance(), otherCar.getDistance());
+    }
+
+    public synchronized void updateSensors(Track track) {
         sensor.put("Frente", checkProximity(x + (int)(Math.cos(Math.toRadians(angle)) * 5),
                 y + (int)(Math.sin(Math.toRadians(angle)) * 5), track));
         sensor.put("Esquerda", checkProximity(x + (int)(Math.cos(Math.toRadians(angle - 90)) * 5),
@@ -81,69 +95,57 @@ public class Car extends Vehicle {
                 y + (int)(Math.sin(Math.toRadians(angle + 90)) * 5), track));
     }
 
-    // Método auxiliar para verificar a proximidade de obstáculos
     private int checkProximity(int x, int y, Track track) {
-        return track.isOnTrack(x, y) ? 1 : 0; // Retorna 1 se estiver na pista, 0 se for obstáculo ou limite
+        return track.isOnTrack(x, y) ? 1 : 0;
     }
 
-    // Método para ajustar direção com base nos sensores
     private void executeAvoidance() {
-        Integer frente = sensor.get("Frente");
-        Integer esquerda = sensor.get("Esquerda");
-        Integer direita = sensor.get("Direita");
+        int frente = sensor.getOrDefault("Frente", 1);
+        int esquerda = sensor.getOrDefault("Esquerda", 1);
+        int direita = sensor.getOrDefault("Direita", 1);
 
-        if (frente != null && frente == 0) { // Obstáculo à frente
-            if (esquerda != null && esquerda == 1) {
-                adjustDirection(-8); // Gira levemente para a esquerda
-            } else if (direita != null && direita == 1) {
-                adjustDirection(8); // Gira levemente para a direita
+        if (frente == 0) {
+            if (esquerda == 1) {
+                adjustDirection(-15);
+            } else if (direita == 1) {
+                adjustDirection(15);
             } else {
-                adjustDirection(45); // Reverte se não há outra direção
+                adjustDirection(180);
             }
-        } else {
-            if (esquerda != null && esquerda == 1 && Math.random() > 0.5) {
-                adjustDirection(-5); // Ajusta levemente à esquerda
-            } else if (direita != null && direita == 1 && Math.random() > 0.5) {
-                adjustDirection(5); // Ajusta levemente à direita
-            }
-        }
-    }
-
-    private void enterCriticalZone(int newX, int newY) {
-        try {
-            if (raceManager.getCriticalZoneSemaphore().tryAcquire(500, TimeUnit.MILLISECONDS)) { // Com timeout
-                System.out.println(name + " entrou na zona crítica.");
-                x = newX;
-                y = newY;
-                distance++;
-            } else {
-                System.out.println(name + " não conseguiu entrar na zona crítica.");
-            }
-        } catch (InterruptedException e) {
-            System.out.println(name + " foi interrompido na zona crítica: " + e.getMessage());
-            Thread.currentThread().interrupt();
-        } finally {
-            raceManager.getCriticalZoneSemaphore().release();
-            System.out.println(name + " saiu da zona crítica.");
+        } else if (esquerda == 0 && direita == 1) {
+            adjustDirection(10);
+        } else if (direita == 0 && esquerda == 1) {
+            adjustDirection(-10);
         }
     }
 
     public void adjustDirection(int adjustAngle) {
         angle += adjustAngle;
-        angle %= 360;  // Mantém o ângulo entre 0 e 359
+        angle %= 360;
     }
 
-    // Getters para obter informações
-    public String getName() { return name; }
-    public int getX() { return x; }
-    public int getY() { return y; }
-    public double getSpeed() { return speed; }
-    public int getDistance() { return distance; }
-    public int getPenalty() { return penalty; }
-    public int getLaps() { return laps; }
+    public void adjustPriority(int priority) {
+        Thread.currentThread().setPriority(priority);
+    }
 
-    // Método para retornar os dados do sensor
+    public void adjustSpeed(int increment) {
+        this.speed += increment;
+    }
+
+    public long getProcessingTime() {
+        return processingTime;
+    }
+
+    public long getResponseTime() {
+        return responseTime;
+    }
+
     public Map<String, Integer> getSensorData() {
         return sensor;
+    }
+
+    @Override
+    public String toString() {
+        return name + " - Distância: " + distance + ", Penalidades: " + penalty;
     }
 }

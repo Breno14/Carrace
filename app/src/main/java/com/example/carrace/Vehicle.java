@@ -11,6 +11,10 @@ public abstract class Vehicle implements Runnable {
     protected boolean isRunning = true;
 
     public Vehicle(String name, int initialX, int initialY, double speed) {
+        if (name == null || name.isEmpty()) throw new IllegalArgumentException("Nome não pode estar vazio");
+        if (initialX < 0 || initialY < 0) throw new IllegalArgumentException("Coordenadas não podem ser negativas");
+        if (speed <= 0) throw new IllegalArgumentException("Velocidade deve ser maior que zero");
+
         this.name = name;
         this.x = initialX;
         this.y = initialY;
@@ -32,13 +36,30 @@ public abstract class Vehicle implements Runnable {
     // Método para parar a corrida do veículo
     public void stop() {
         isRunning = false;
+        Thread.currentThread().interrupt(); // Interrompe a thread atual de forma segura
     }
 
-    // Método abstrato para movimentação que deve ser implementado por subclasses
+    // Método abstrato para movimentação
     public abstract void move();
 
-    // Novo método abstrato para incrementar penalidade
+    // Método abstrato para incrementar penalidade
     public abstract void incrementPenalty();
+
+    // Consumo de combustível
+    public void consumeFuel(int amount) {
+        if (fuel - amount < 0) {
+            fuel = 0;
+            stop(); // Para o veículo se acabar o combustível
+        } else {
+            fuel -= amount;
+        }
+    }
+
+    // Atualização segura de posição
+    public synchronized void updatePosition(int deltaX, int deltaY) {
+        this.x += deltaX;
+        this.y += deltaY;
+    }
 
     public void setX(int x) {
         this.x = x;
@@ -72,4 +93,6 @@ public abstract class Vehicle implements Runnable {
     public int getDistance() { return distance; }
     public int getPenalty() { return penalty; }
     public int getLaps() { return laps; }
+    public int getFuel() { return fuel; }
+    public boolean isRunning(){ return isRunning;}
 }

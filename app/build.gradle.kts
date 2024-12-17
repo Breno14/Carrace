@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services") // Plugin do Google Services para Firebase
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -30,19 +30,24 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
     buildFeatures {
         compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -51,11 +56,23 @@ android {
 }
 
 dependencies {
-    // Dependências do Firebase usando o Firebase BoM
-    implementation(platform(libs.firebase.bom))        // Firebase BoM para gerenciar versões das bibliotecas do Firebase
-    implementation(libs.firebase.firestore)            // Firestore para armazenamento em nuvem
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
+    implementation("com.google.code.gson:gson:2.10.1")
 
-    // Dependências Android existentes
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx")
+    implementation("androidx.lifecycle:lifecycle-livedata")
+    implementation("androidx.lifecycle:lifecycle-viewmodel")
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.android.material:material:1.9.0")
+    implementation(project(":simulate"))
+
+    // Outras dependências Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -64,24 +81,34 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    // Firebase Firestore para banco de dados em nuvem
-    implementation("com.google.firebase:firebase-firestore:24.0.0")
+    implementation(libs.androidxConstraintLayout)
+    implementation(libs.androidxAppCompat)
 
-    // Opcional: Firebase Analytics para estatísticas
-    implementation("com.google.firebase:firebase-analytics:21.0.0")
-
-    // Dependências de Testes
+    // Testes
     testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter)
-    androidTestImplementation(libs.androidx.junit)
     testImplementation(libs.mockito.core)
+    androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    // Adicionando ConstraintLayout e AppCompat do Version Catalog
-    implementation(libs.androidxConstraintLayout)
-    implementation(libs.androidxAppCompat)
 }
+
+tasks.register<Jar>("exportJar") {
+    archiveClassifier.set("export")
+
+    // Aponta para as classes compiladas do build intermediário do Android
+    from("build/intermediates/javac/debug/classes")
+
+    // Exclui arquivos de assinatura desnecessários
+    exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
+
+    // Define o ponto de entrada principal
+    manifest {
+        attributes("Main-Class" to "com.example.carrace.RealTimeRaceManagerWithEquations")
+    }
+}
+
+

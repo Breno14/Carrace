@@ -7,6 +7,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
 
+
     <FrameLayout
         android:id="@+id/trackContainer"
         android:layout_width="300dp"
@@ -16,6 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
+
 
     <TextView
         android:id="@+id/numCarsLabel"
@@ -38,6 +40,7 @@
         app:layout_constraintStart_toEndOf="@id/numCarsLabel"
         android:layout_marginStart="8dp"
         android:textSize="16sp" />
+
 
     <Button
         android:id="@+id/startButton"
@@ -73,13 +76,26 @@
         app:layout_constraintStart_toStartOf="@id/pauseButton"
         android:layout_marginTop="8dp" />
 
+
+    <Button
+        android:id="@+id/testRealTimeRaceButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test RealTimeRace"
+        android:backgroundTint="#03A9F4"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/startButton"
+        app:layout_constraintStart_toStartOf="@id/finishButton"
+        android:layout_marginTop="120dp" />
+
+
     <TextView
         android:id="@+id/lapsInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Voltas:"
         android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/finishButton"
+        app:layout_constraintTop_toBottomOf="@id/testRealTimeRaceButton"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="16dp"
         android:layout_marginStart="32dp" />

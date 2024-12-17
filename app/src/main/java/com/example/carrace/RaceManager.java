@@ -1,7 +1,9 @@
 package com.example.carrace;
 
+import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ public class RaceManager {
     private RaceUpdateListener listener;
     private Handler handler = new Handler();
     private final int UPDATE_INTERVAL = 100;
+    private Context context;
 
     // Semáforo para controlar a zona crítica
     private final Semaphore criticalZoneSemaphore = new Semaphore(1); // Apenas 1 carro por vez
@@ -24,7 +27,8 @@ public class RaceManager {
     // Firebase Firestore
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    public RaceManager(Track track) {
+    public RaceManager(Context context, Track track) {
+        this.context = context;
         this.track = track;
     }
 
@@ -68,7 +72,9 @@ public class RaceManager {
 
         // Parar cada veículo e verificar seu status
         for (Vehicle vehicle : vehicles) {
-            vehicle.stop();
+            if (vehicle.isRunning()) {
+                vehicle.stop();
+            }
             Log.d("RaceManager", vehicle.getName() + " foi parado.");
         }
 
@@ -93,7 +99,10 @@ public class RaceManager {
             db.collection("raceState").document(vehicle.getName())
                     .set(carData)
                     .addOnSuccessListener(aVoid -> Log.d("RaceManager", vehicle.getName() + " salvo com sucesso."))
-                    .addOnFailureListener(e -> Log.e("RaceManager", "Erro ao salvar " + vehicle.getName() + ": " + e.getMessage()));
+                    .addOnFailureListener(e -> {
+                        Log.e("RaceManager", "Erro ao salvar " + vehicle.getName() + ": " + e.getMessage());
+                        Toast.makeText(context, "Falha ao salvar dados do veículo: " + vehicle.getName(), Toast.LENGTH_SHORT).show();
+                    });
         }
     }
 
@@ -151,8 +160,22 @@ public class RaceManager {
                 if (Math.abs(vehicleA.getX() - vehicleB.getX()) < 20 && Math.abs(vehicleA.getY() - vehicleB.getY()) < 20) {
                     vehicleA.incrementPenalty();
                     vehicleB.incrementPenalty();
+                    Log.d("RaceManager", "Colisão detectada entre " + vehicleA.getName() + " e " + vehicleB.getName());
                 }
             }
+        }
+    }
+
+    public void enterCriticalZone(Vehicle vehicle) {
+        try {
+            criticalZoneSemaphore.acquire();
+            Log.d("RaceManager", vehicle.getName() + " entrou na zona crítica.");
+            // Processa lógica específica aqui
+        } catch (InterruptedException e) {
+            Log.e("RaceManager", "Erro ao acessar zona crítica: " + e.getMessage());
+        } finally {
+            criticalZoneSemaphore.release();
+            Log.d("RaceManager", vehicle.getName() + " saiu da zona crítica.");
         }
     }
 }
