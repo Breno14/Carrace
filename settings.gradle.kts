@@ -13,11 +13,6 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-<<<<<<< HEAD
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS) 
-=======
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
->>>>>>> 98c07a1 (Projeto car race)
     repositories {
         google()
         mavenCentral()
